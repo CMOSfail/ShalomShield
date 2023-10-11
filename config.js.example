@@ -3,6 +3,7 @@ const creds = require("./creds.js");
 module.exports = {
     TOKEN: creds.TOKEN, // Replace with your Discord bot token at creds.js
     LAST: "", // This is used to track the last alert. Leave it as an empty string.
+    OWNER_ID: 'YOUR_USER_ID', // Replace with your Discord User ID as a string
     Channels: [
         ['YOUR_GUILD_ID_1', 'YOUR_CHANNEL_ID_1'], // Replace with your Guild and Channel IDs as strings
         ['YOUR_GUILD_ID_2', 'YOUR_CHANNEL_ID_2'], // Add more as necessary, always as strings

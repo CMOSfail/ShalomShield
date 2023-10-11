@@ -2,37 +2,27 @@ const { Client, Events, GatewayIntentBits } = require('discord.js');
 const config = require("./config.js");
 const axios = require('axios');
 
-// Cache for the most recent alerts
 let alerts = "";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
-// Function to check for new alerts
 function checkForUpdates() {
     axios.get('https://www.oref.org.il/WarningMessages/History/AlertsHistory.json')
         .then(response => {
             const data = response.data;
-
             if (JSON.stringify(alerts) !== JSON.stringify(data)) {
                 alerts = data;
-
                 if (data[0].alertDate + data[0].data !== config.LAST) {
                     config.LAST = data[0].alertDate + data[0].data;
-
                     for (let channelInfo of config.Channels) {
-                        const channel = client.channels.cache.get(channelInfo[1].toString()); // Make sure to use the ID as a string
-
+                        const channel = client.channels.cache.get(channelInfo[1].toString());
                         if (channel) {
                             try {
                                 channel.send({
-                                    "channel_id": channelInfo[1].toString(),
-                                    "content": "",
-                                    "tts": false,
-                                    "embeds": [
+                                    embeds: [
                                         {
                                             "type": "rich",
                                             "title": `🔴 ${data[0].title} 🔴`,
-                                            "description": "",
                                             "color": 0xff0000,
                                             "fields": [
                                                 {
@@ -66,28 +56,18 @@ function checkForUpdates() {
 }
 
 client.on('ready', () => {
-    console.log(`Bot started and ready!`);
-    
-    // Send a message on all channels when bot starts
-    for (let channelInfo of config.Channels) {
-        const channel = client.channels.cache.get(channelInfo[1].toString());
-        if (channel) {
-            try {
-                channel.send("ShalomShield is now online and monitoring!");
-            } catch (error) {
-                console.error(`Failed to send startup message to channel ${channelInfo[1]}. Error:`, error.message);
-            }
-        }
+    setInterval(checkForUpdates, 500);  // Check every 0.5 seconds
+    const owner = client.users.cache.get(config.OWNER_ID);
+    if (owner) {
+        owner.send("ShalomShield bot is up and running!");
+    } else {
+        console.warn(`Owner with ID ${config.OWNER_ID} not found.`);
     }
-    
-    setInterval(checkForUpdates, 500); // Regularly check for updates
 });
 
-// Event for initial bot readiness
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
     checkForUpdates();  // Initial check on bot startup
 });
 
-// Log in to the bot
 client.login(config.TOKEN);
