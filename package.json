@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "axios": "^1.4.0",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.0.3"
+  },
+  "name": "redalert-bot",
+  "version": "1.0.0",
+  "description": "A discord bot that sends notifications about missiles alerts in israel",
+  "main": "main.js",
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SnirHR",
+  "license": "ISC"
+}
