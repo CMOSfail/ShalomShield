@@ -1,2 +1,4 @@
 node_modules
+assets
 creds.js
+config.js
