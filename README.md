@@ -1,5 +1,6 @@
 # ShalomShield
-![banner](https://github.com/CMOSfail/ShalomShield/assets/49645262/a05db33d-fb5a-4807-921b-a329842518f9)
+![banner](https://github.com/CMOSfail/ShalomShield/assets/49645262/8a2754bb-c9ed-441c-9727-cf9394913bdd)
+
 
 ShalomShield is a Discord bot designed to send real-time alerts about the "Tzeva Adom" (Color Red) sirens in Israel. Drawing data directly from "Pikud HaOref" (Israel's Home Front Command), this bot provides notifications to specified Discord channels regarding imminent threats.
 
