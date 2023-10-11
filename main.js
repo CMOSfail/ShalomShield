@@ -64,7 +64,7 @@ function checkForUpdates() {
 }
 
 client.on('ready', () => {
-    setInterval(checkForUpdates, 30000);  // Check every 30 seconds
+    setInterval(checkForUpdates, 500);  // Check every 0.5 seconds
 });
 
 client.once(Events.ClientReady, c => {
