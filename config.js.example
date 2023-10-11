@@ -1,0 +1,11 @@
+const creds = require("./creds.js");
+
+module.exports = {
+    TOKEN: creds.TOKEN, // Replace with your Discord bot token at creds.js
+    LAST: "", // This is used to track the last alert. Leave it as an empty string.
+    Channels: [
+        [YOUR_GUILD_ID_1, YOUR_CHANNEL_ID_1], // Replace with your Guild and Channel IDs
+        [YOUR_GUILD_ID_2, YOUR_CHANNEL_ID_2], // Add more as necessary
+        // ... You can add more channel pairs here
+    ]
+};
