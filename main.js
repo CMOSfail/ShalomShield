@@ -42,7 +42,7 @@ function checkForUpdates() {
                                     ]
                                 });
 
-                                logger.info(`Message sent to channel ${channelInfo[1]}.`);
+                                logger.info(`Message sent to channel ${channelInfo[1]} | ${data[0].alertDate.slice(11, 16)} | ${data[0].data}`);
                             } catch (error) {
                                 console.error(`Failed to send message to channel ${channelInfo[1]}. Error:`, error.message);
                                 logger.error(`Failed to send message to channel ${channelInfo[1]}. Error: ${error.message}`);
@@ -65,7 +65,7 @@ client.on('ready', () => {
     setInterval(checkForUpdates, 500);  // Check every 0.5 seconds
     const owner = client.users.cache.get(config.OWNER_ID);
     if (owner) {
-        owner.send("ShalomShield bot is up and running!");
+        owner.send("ShalomShield is up and running! Thank you for using our service ❤️");
 
         logger.info('Owner DM sent.');
     } else {
@@ -75,8 +75,8 @@ client.on('ready', () => {
 });
 
 client.once(Events.ClientReady, c => {
-    console.log(`Ready! Logged in as ${c.user.tag}`);
-    logger.info(`Ready! Logged in as ${c.user.tag}`);
+    console.log(`Ready! Logged in as ${c.user.tag}.`);
+    logger.info(`Ready! Logged in as ${c.user.tag}.`);
     checkForUpdates();  // Initial check on bot startup
 });
 
