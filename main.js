@@ -1,6 +1,7 @@
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 const config = require("./config.js");
 const axios = require('axios');
+const logger = require('./logger');
 
 let alerts = "";
 
@@ -40,11 +41,15 @@ function checkForUpdates() {
                                         }
                                     ]
                                 });
+
+                                logger.info(`Message sent to channel ${channelInfo[1]}.`);
                             } catch (error) {
                                 console.error(`Failed to send message to channel ${channelInfo[1]}. Error:`, error.message);
+                                logger.error(`Failed to send message to channel ${channelInfo[1]}. Error: ${error.message}`);
                             }
                         } else {
                             console.warn(`Channel with ID ${channelInfo[1]} not found.`);
+                            logger.warn(`Channel with ID ${channelInfo[1]} not found.`);
                         }
                     }
                 }
@@ -52,6 +57,7 @@ function checkForUpdates() {
         })
         .catch(error => {
             console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', error);
         });
 }
 
@@ -60,13 +66,17 @@ client.on('ready', () => {
     const owner = client.users.cache.get(config.OWNER_ID);
     if (owner) {
         owner.send("ShalomShield bot is up and running!");
+
+        logger.info('Owner DM sent.');
     } else {
         console.warn(`Owner with ID ${config.OWNER_ID} not found.`);
+        logger.warn(`Owner with ID ${config.OWNER_ID} not found.`);
     }
 });
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
+    logger.info(`Ready! Logged in as ${c.user.tag}`);
     checkForUpdates();  // Initial check on bot startup
 });
 
