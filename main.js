@@ -1,20 +1,41 @@
+// File: index.js
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 const config = require("./config.js");
 const axios = require('axios');
 const logger = require('./logger');
-
-let alerts = "";
+const processedAlertsTracker = require('./processedAlertsTracker');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
+
+let processedAlerts = processedAlertsTracker.loadProcessedAlerts();
 
 function checkForUpdates() {
     axios.get('https://www.oref.org.il/WarningMessages/History/AlertsHistory.json')
         .then(response => {
             const data = response.data;
-            if (JSON.stringify(alerts) !== JSON.stringify(data)) {
-                alerts = data;
-                if (data[0].alertDate + data[0].data !== config.LAST) {
-                    config.LAST = data[0].alertDate + data[0].data;
+            const oneHourAgo = Date.now() - (60 * 60 * 1000);
+            const newAlerts = data.filter(alert => {
+                const alertTime = new Date(alert.alertDate).getTime();
+                return !processedAlerts[alert.alertDate + alert.data] && alertTime >= oneHourAgo;
+            });
+
+            if (newAlerts.length > 0) {
+                const groupedAlerts = {};
+                newAlerts.forEach(alert => {
+                    const key = alert.alertDate;
+                    if (!groupedAlerts[key]) {
+                        groupedAlerts[key] = {
+                            title: alert.title,
+                            locations: [alert.data],
+                            alertDate: alert.alertDate
+                        };
+                    } else {
+                        groupedAlerts[key].locations.push(alert.data);
+                    }
+                });
+
+                for (let key in groupedAlerts) {
+                    const alertGroup = groupedAlerts[key];
                     for (let channelInfo of config.Channels) {
                         const channel = client.channels.cache.get(channelInfo[1].toString());
                         if (channel) {
@@ -23,16 +44,16 @@ function checkForUpdates() {
                                     embeds: [
                                         {
                                             "type": "rich",
-                                            "title": `🔴 ${data[0].title} 🔴`,
+                                            "title": `🔴 ${alertGroup.title} 🔴`,
                                             "color": 0xff0000,
                                             "fields": [
                                                 {
                                                     "name": `שעה:`,
-                                                    "value": `${data[0].alertDate.slice(11, 16)}`
+                                                    "value": `${alertGroup.alertDate.slice(11, 16)}`
                                                 },
                                                 {
                                                     "name": `מיקום:`,
-                                                    "value": `${data[0].data}`
+                                                    "value": `${alertGroup.locations.join(', ')}`
                                                 }
                                             ],
                                             "footer": {
@@ -42,7 +63,6 @@ function checkForUpdates() {
                                     ]
                                 });
 
-                                logger.info(`Message sent to channel ${channelInfo[1]} | ${data[0].alertDate.slice(11, 16)} | ${data[0].data}`);
                             } catch (error) {
                                 console.error(`Failed to send message to channel ${channelInfo[1]}. Error:`, error.message);
                                 logger.error(`Failed to send message to channel ${channelInfo[1]}. Error: ${error.message}`);
@@ -52,7 +72,11 @@ function checkForUpdates() {
                             logger.warn(`Channel with ID ${channelInfo[1]} not found.`);
                         }
                     }
+
+                    processedAlerts[alertGroup.alertDate + alertGroup.locations.join(', ')] = true;
                 }
+
+                processedAlertsTracker.saveProcessedAlerts(processedAlerts);
             }
         })
         .catch(error => {
@@ -62,12 +86,17 @@ function checkForUpdates() {
 }
 
 client.on('ready', () => {
-    setInterval(checkForUpdates, 500);  // Check every 0.5 seconds
+    setInterval(checkForUpdates, 10000);  // Check every 10 seconds
     const owner = client.users.cache.get(config.OWNER_ID);
     if (owner) {
-        owner.send("ShalomShield is up and running! Thank you for using our service ❤️");
-
-        logger.info('Owner DM sent.');
+        owner.send("ShalomShield is up and running! Thank you for using our service ❤️")
+            .then(() => {
+                logger.info('Owner DM sent.');
+            })
+            .catch(error => {
+                console.error('Error sending DM:', error);
+                logger.error('Error sending DM:', error);
+            });
     } else {
         console.warn(`Owner with ID ${config.OWNER_ID} not found.`);
         logger.warn(`Owner with ID ${config.OWNER_ID} not found.`);
