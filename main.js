@@ -1,4 +1,3 @@
-// File: index.js
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 const config = require("./config.js");
 const axios = require('axios');
@@ -13,16 +12,16 @@ function checkForUpdates() {
     axios.get('https://www.oref.org.il/WarningMessages/History/AlertsHistory.json')
         .then(response => {
             const data = response.data;
-            const oneHourAgo = Date.now() - (60 * 60 * 1000);
+            const tenMinutesAgo = Date.now() - (10 * 60 * 1000);  // 10 minutes in milliseconds
             const newAlerts = data.filter(alert => {
                 const alertTime = new Date(alert.alertDate).getTime();
-                return !processedAlerts[alert.alertDate + alert.data] && alertTime >= oneHourAgo;
+                return !processedAlerts[alert.alertDate + alert.data] && alertTime >= tenMinutesAgo;
             });
 
             if (newAlerts.length > 0) {
                 const groupedAlerts = {};
                 newAlerts.forEach(alert => {
-                    const key = alert.alertDate;
+                    const key = alert.alertDate;  // Group by exact date and time
                     if (!groupedAlerts[key]) {
                         groupedAlerts[key] = {
                             title: alert.title,
@@ -49,7 +48,7 @@ function checkForUpdates() {
                                             "fields": [
                                                 {
                                                     "name": `שעה:`,
-                                                    "value": `${alertGroup.alertDate.slice(11, 16)}`
+                                                    "value": `${alertGroup.alertDate.slice(11, 19)}`
                                                 },
                                                 {
                                                     "name": `מיקום:`,
@@ -86,7 +85,7 @@ function checkForUpdates() {
 }
 
 client.on('ready', () => {
-    setInterval(checkForUpdates, 10000);  // Check every 10 seconds
+    setInterval(checkForUpdates, 30);  // Check every 0.03 seconds
     const owner = client.users.cache.get(config.OWNER_ID);
     if (owner) {
         owner.send("ShalomShield is up and running! Thank you for using our service ❤️")
